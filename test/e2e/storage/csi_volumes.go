@@ -24,7 +24,7 @@ import (
 
 	"k8s.io/api/core/v1"
 	storagev1 "k8s.io/api/storage/v1"
-		clientset "k8s.io/client-go/kubernetes"
+	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/kubernetes/test/e2e/framework"
 	"k8s.io/kubernetes/test/e2e/framework/podlogs"
 	"k8s.io/kubernetes/test/e2e/storage/testpatterns"
@@ -34,7 +34,8 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-			"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/apimachinery/pkg/util/sets"
+	"os"
 )
 
 func csiTunePattern(patterns []testpatterns.TestPattern) []testpatterns.TestPattern {
@@ -92,12 +93,12 @@ var _ = Describe("CSI Volumes", func() {
 
 	// List of test drivers to be tested against.
 	var csiTestDrivers = []func() testdriver.TestDriver{
-		
+
 		func() testdriver.TestDriver {
 
-			fileName := "driver_manifest.json"
+			fileName := os.Getenv("DRIVER_MANIFEST")
 			manifestObject, jsonErr := getManifestJson(fileName)
-			if jsonErr!= nil{
+			if jsonErr != nil {
 				framework.Failf("Error reading json manifest file: %v", jsonErr)
 			}
 
@@ -119,11 +120,11 @@ var _ = Describe("CSI Volumes", func() {
 						Prefix:    "csi",
 					},
 				},
-				Manifests: manifestObject.Manifests,
+				Manifests:  manifestObject.Manifests,
 				ScManifest: manifestObject.ScManifest,
 				// Enable renaming of the driver.
 				PatchOptions: manifestObject.PatchOptions,
-				ClaimSize: manifestObject.ClaimSize,
+				ClaimSize:    manifestObject.ClaimSize,
 
 				// The actual node on which the driver and the test pods run must
 				// be set at runtime because it cannot be determined in advance.
@@ -134,7 +135,6 @@ var _ = Describe("CSI Volumes", func() {
 					m.PatchOptions.NodeName = node.Name
 
 				},
-
 			}
 			//fmt.Printf("%v", driver_manifest)
 			//output, jsonErr := json.MarshalIndent(driver_manifest, "", "\t")
