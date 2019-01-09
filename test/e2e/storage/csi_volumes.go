@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"math/rand"
 	"strings"
-
+	"flag"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"k8s.io/api/core/v1"
@@ -36,6 +36,18 @@ import (
 	"k8s.io/kubernetes/test/e2e/storage/utils"
 	"os"
 )
+var manifestFile = func () string {
+	var fileName string
+	flag.StringVar(&fileName, "manifest", "", "Provide path to the CSI Driver manifest JSON file")
+	flag.Parse()
+
+	if fileName == "" {
+		fmt.Errorf("Must provide path to manifest JSON file with flag '--manifest'")
+		os.Exit(1)
+	}
+
+	return fileName
+}
 
 func csiTunePattern(patterns []testpatterns.TestPattern) []testpatterns.TestPattern {
 	tunedPatterns := []testpatterns.TestPattern{}
@@ -93,8 +105,8 @@ var _ = Describe("CSI Volumes", func() {
 	// List of test drivers to be tested against.
 	var csiTestDriver = func() *manifestDriver {
 
-		fileName := os.Getenv("DRIVER_MANIFEST")
-		manifestObject, jsonErr := getManifestJson(fileName)
+		//fileName := os.Getenv("DRIVER_MANIFEST")
+		manifestObject, jsonErr := getManifestJson(manifestFile())
 		if jsonErr != nil {
 			framework.Failf("Error reading json manifest file: %v", jsonErr)
 		}
